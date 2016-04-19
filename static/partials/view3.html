@@ -1,0 +1,14 @@
+<div ng-controller="PollsController">
+	<a class="toolbar" href="#/partial2">Cancel</a>
+	<h3>Put the Questions and Options Here</h3>
+	<form name="myForm">
+		Question: <input name="question" type="text" ng-minlength="8" ng-model="newPoll.question" required>
+		Option 1: <input name="option1" type="text" ng-minlength="3" ng-model="newPoll.option1" required>
+		Option 2: <input name="option2" type="text" ng-minlength="3" ng-model="newPoll.option2" required>
+		Option 3: <input name="option3" type="text" ng-minlength="3" ng-model="newPoll.option3" required>
+		Option 4: <input name="option4" type="text" ng-minlength="3" ng-model="newPoll.option4" required>
+		<input type="submit" value="Create Poll" ng-click="addPoll(currentUser, myForm.question.$valid, myForm.option1.$valid, myForm.option2.$valid, myForm.option3.$valid, myForm.option4.$valid)">
+	</form>
+	<p>{{error}}</p>
+	
+</div>

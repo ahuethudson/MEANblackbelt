@@ -1,0 +1,34 @@
+<div ng-controller="CurrentPollsController">
+	<a class="toolbar" href="#/partial2">Go to Polls<a>
+	<h3>{{currentPoll[0].question}}</h3>
+	<h5>Click the Vote button to choose one</h5>
+	<table>
+		<thead>
+			<th>Option</th>
+			<th>Vote Count</th>
+			<th>Action</th>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{currentPoll[0].option1}}</td>
+				<td>{{currentPoll[0].votes1}}</td>
+				<td><button ng-click="vote(1, currentPoll[0]._id)">Vote</button></td>
+			</tr>
+			<tr>
+				<td>{{currentPoll[0].option2}}</td>
+				<td>{{currentPoll[0].votes2}}</td>
+				<td><button ng-click="vote(2, currentPoll[0]._id)">Vote</button></td>
+			</tr>
+			<tr>
+				<td>{{currentPoll[0].option3}}</td>
+				<td>{{currentPoll[0].votes3}}</td>
+				<td><button ng-click="vote(3, currentPoll[0]._id)">Vote</button></td>
+			</tr>
+			<tr>
+				<td>{{currentPoll[0].option4}}</td>
+				<td>{{currentPoll[0].votes4}}</td>
+				<td><button ng-click="vote(4, currentPoll[0]._id)">Vote</button></td>
+			</tr>
+		</tbody>
+	</table>
+</div>

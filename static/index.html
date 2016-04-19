@@ -1,0 +1,232 @@
+<html>
+<head>
+	<title>Discussion Board</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.9/angular-route.min.js"></script>
+	<script type="text/javascript">
+		var myApp = angular.module("myApp", ["ngRoute"]);
+		myApp.config(["$routeProvider", function($routeProvider){
+			$routeProvider.
+			when("/", {
+				templateUrl: "partials/view1.html"
+			}).
+			when("/partial2", {
+				templateUrl: "partials/view2.html"
+			}).
+			when("/partial3", {
+				templateUrl: "partials/view3.html"
+			}).
+			when("/partial4", {
+				templateUrl: "partials/view4.html"
+			}).
+			otherwise ({
+				redirectTo: "/"
+			});
+		}]);
+		myApp.controller("UsersController", function($scope, UsersFactory, $location){
+			$scope.currentUser;
+			$scope.addUser = function(){
+				UsersFactory.findUser($scope.newUser, function(callback){
+					$scope.currentUser = callback;
+					$location.url("/partial2");
+				});
+			};
+		});
+		myApp.factory("UsersFactory", function($http, $location){
+			var factory = {};
+			var users = [];
+			var currentUsername;
+			factory.index = function(callback){
+				callback(currentUsername);
+			}
+			factory.findUser = function(newUser, callback){
+				var name = newUser.name
+				$http.get("/user/" + name).success(function(output){
+					currentUsername = output[0].name;
+					callback(currentUsername);
+				});
+			}
+			return factory;
+		});
+		myApp.controller("DashboardController", function($scope, PollsFactory){
+			$scope.polls = [];
+			$scope.currentUser;
+			$scope.findUser = function(){
+				UsersFactory.index(function(callback){
+					$scope.currentUser = callback
+				});
+			}
+			$scope.getPolls = function(){
+				PollsFactory.findPolls(function(callback){
+					$scope.polls = callback
+				});
+			}
+
+		});
+		myApp.controller("DashboardController", function($scope, UsersFactory, PollsFactory){
+			$scope.polls = [];
+			$scope.currentUser;
+			$scope.findUser = function(){
+				UsersFactory.index(function(callback){
+					$scope.currentUser = callback
+				});
+			}
+			$scope.getPolls = function(){
+				PollsFactory.findPolls(function(callback){
+					$scope.polls = callback
+					$scope.populate();
+				});
+			}
+			$scope.goPoll = function(id){
+				PollsFactory.goTo(id);
+			}	
+			$scope.populate = function(){
+				for(var i=0; i < $scope.polls.length; i++ ){
+				$scope.polls[i].action = '';
+					if ($scope.polls[i].username == $scope.currentUser){
+						$scope.polls[i].action = "Delete"
+					} else {
+						$scope.polls[i].action = ""
+					}
+				}
+			}
+			$scope.deletePoll = function(id, poll){
+				PollsFactory.delete(id, poll);
+			}
+			$scope.findUser();		
+			$scope.getPolls();
+
+		});
+		myApp.controller("PollsController", function($scope, PollsFactory, UsersFactory){
+			$scope.error = "";
+			$scope.currentUser;
+			$scope.findUser = function(){
+				console.log("hello");
+				UsersFactory.index(function(callback){
+					$scope.currentUser = callback
+				});
+			}
+			$scope.addPoll = function(username, question, option1, option2, option3, option4){
+				if (question == false) {
+					$scope.error = "Question is required and must be a minimum of 8 characters.";
+				}
+				else if (option1 == false || option2 == false || option3 == false || option4 == false) {
+					$scope.error = "Options are required and must be a minimum of 3 characters each.";
+				} else {
+					$scope.newPoll.username = username;
+					var date = Date();
+					var newdate = "";
+					for(var i=0; i<16; i++){
+						newdate += date[i];
+					}
+					console.log(newdate);
+					$scope.newPoll.date = newdate;
+					PollsFactory.addPoll($scope.newPoll)
+				}	
+			}
+			$scope.findUser();
+		});
+		myApp.factory("PollsFactory", function($http, $location){
+			var factory = {};
+			var polls = [];
+			var specificPoll;
+			factory.addPoll = function(newPoll){
+				$http.post("/addpoll", newPoll).success(function(){
+					console.log("success");
+				});
+				$location.url("/partial2");
+			}
+			factory.index = function(callback){
+				callback(specificPoll);
+			}
+			factory.findPolls = function(callback){
+				$http.get("/polls").success(function(output){
+					polls = output
+					callback(polls);
+				});
+			}
+			factory.goTo = function(id){
+				$http.get("/polls/" + id).success(function(output){
+					specificPoll = output;
+					$location.url("/partial4");
+				});
+			}
+			factory.delete = function(id, currentPoll){
+				$http.get("/delete/" + id).success(function(output){
+					polls.splice(polls.indexOf(currentPoll), 1);
+				});
+			}
+			factory.addVote = function(option, id){
+				if (option == 1) {
+					specificPoll[0].votes1 += 1;
+					$http.get("/polls/" + id + "/" + option).success(function(output){
+					});
+				}
+				else if (option == 2){
+					specificPoll[0].votes2 += 1;
+					$http.get("/polls/" + id + "/" + option).success(function(output){
+					});
+				}
+				else if (option == 3){
+					specificPoll[0].votes3 += 1
+					$http.get("/polls/" + id + "/" + option).success(function(output){
+					});	
+				}
+				else if (option == 4){
+					specificPoll[0].votes4 += 1;
+					$http.get("/polls/" + id + "/" + option).success(function(output){
+					});
+				}
+			}
+			return factory;
+		});
+		myApp.controller("CurrentPollsController", function($scope, PollsFactory, $location){
+			$scope.currentPoll;
+			$scope.findPoll = function(){
+				PollsFactory.index(function(callback){
+					$scope.currentPoll = callback;
+				})
+			}
+			$scope.vote = function(option, poll_id){
+				PollsFactory.addVote(option, poll_id);
+
+			}
+			$scope.findPoll();
+
+		});
+	</script>
+</head>
+<body>
+	<div ng-app="myApp">
+		<div ng-view=""></div>
+	</div>
+
+</body>
+</html>
+<style type="text/css">
+*{
+	font-family: geneva;
+}
+input {
+	display: block;
+	margin-bottom: 2em;
+}
+table, th {
+	border: 1px solid black;
+	padding: .5em;
+}
+td {
+	width: 10em;
+	text-align: center;
+}
+.toolbar {
+	margin-left: 60%;
+}
+a {
+	display: inline-block;
+}
+#special{
+	display: inline-block;
+}
+
+</style>
